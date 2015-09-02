@@ -1,0 +1,20 @@
+{
+    "version": "1.0.0-*",
+    "description": "Test Console Application",
+    "authors": [ "广杰" ],
+    "tags": [ "" ],
+    "projectUrl": "",
+    "licenseUrl": "",
+
+    "dependencies": {
+        "BahamutCommon": "1.0.0-*"
+    },
+
+    "commands": {
+        "Test": "Test"
+    },
+
+    "frameworks": {
+        "dnx451": { }
+    }
+}
