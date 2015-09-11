@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DBTek.Crypto;
 
 namespace BahamutCommon
 {
@@ -15,7 +16,7 @@ namespace BahamutCommon
         public static string GenerateAppkey(string appName)
         {
             var guid = Guid.NewGuid();
-            var sha = new DBTek.Crypto.SHA1_Hsr();
+            var sha = new SHA1_Hsr();
             var code = string.Format("{0}_{1}_{2}", guid.ToString(), appName,DateTime.Now.Ticks);
             return sha.HashString(code);
         }

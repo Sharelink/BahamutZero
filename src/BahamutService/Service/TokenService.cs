@@ -19,8 +19,9 @@ namespace BahamutService
         { }
 
         public TokenService(string host,int port,string password = null, long db = 0):
-            this(RedisClientFactory.Instance.CreateRedisClient(new RedisEndpoint(host, port, password, db)))
-        {}
+            this(new RedisClient(new RedisEndpoint(host, port, password, db)))
+        {
+        }
 
         public TokenService(RedisClient Client)
         {

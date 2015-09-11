@@ -6,18 +6,10 @@
     "projectUrl": "",
     "licenseUrl": "",
 
-    "dependencies": {
-        "System.Collections": "4.0.0-beta-23109",
-        "System.Linq": "4.0.0-beta-23109",
-        "System.Threading": "4.0.10-beta-23109",
-        "System.Runtime": "4.0.10-beta-23109",
-        "Microsoft.CSharp": "4.0.0-beta-23109",
+  "dependencies": {
+        "ServiceStack.Redis": "4.0.44",
         "Newtonsoft.Json": "7.0.1",
-        "DBTek.Crypto": "2.0.1",
-        "Microsoft.Framework.Configuration.Abstractions": "1.0.0-beta6"
-    },
+        "DBTek.Crypto": "2.1.0"
+      }
 
-    "frameworks": {
-        "dnx451": { }
-    }
 }
