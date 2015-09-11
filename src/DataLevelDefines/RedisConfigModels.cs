@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DataLevelDefines
 {
-    public interface ITokenRedisServerConfig
+    public interface IRedisServerConfig
     {
         string Host { get; set; }
         int Port { get; set; }
@@ -13,8 +13,21 @@ namespace DataLevelDefines
         long Db { get; set; }
     }
 
-    public class TokenRedisServerConfig : ITokenRedisServerConfig
+    public class RedisServerConfig : IRedisServerConfig
     {
+        public RedisServerConfig()
+        {
+
+        }
+
+        public RedisServerConfig(string host,int port,string password,long db)
+        {
+            this.Db = db;
+            this.Host = host;
+            this.Password = password;
+            this.Port = port;
+        }
+
         public string Host { get; set; }
         public int Port { get; set; }
         public string Password { set; get; }
