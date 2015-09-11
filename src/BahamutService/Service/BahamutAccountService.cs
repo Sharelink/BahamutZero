@@ -28,9 +28,45 @@ namespace BahamutService
             return newBahamutAccount.AccountID.ToString();
         }
 
+        public bool ChangePassword(string accountId,string oldPassword, string newPassword)
+        {
+            return true;
+        }
+
+        public bool ChangeAccountEmail(string accountId,string newEmail)
+        {
+            return true;
+        }
+
+        public bool ChangeAccountMobile(string accountId,string newMobile)
+        {
+            return true;
+        }
+
+        public bool ChangeAccountName(string accountId,string newName)
+        {
+            return true;
+        }
+
+        public bool ChangeAccountBirthday(string accountId,DateTime newBirth)
+        {
+            return true;
+        }
+
+        public bool ChangeName(string accountId,string newName)
+        {
+            return true;
+        }
+
+        public Account GetAccount(string accountId)
+        {
+            return new Account() {  };
+        }
+
         public void SaveAllChanges()
         {
             DBContext.SaveChangesAsync();
         }
     }
+
 }

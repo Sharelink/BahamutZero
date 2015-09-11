@@ -21,14 +21,11 @@ namespace BahamutService.Model
         {
             get
             {
-                return
-                    !string.IsNullOrWhiteSpace(UserId) &&
-                    !string.IsNullOrWhiteSpace(AppToken);
+                return null != UserSessionData;
             }
         }
+        public AccountSessionData UserSessionData { get; set; }
         public string Message { get; set; }
-        public string UserId { get; set; }
-        public string AppToken { get; set; }
     }
 
     public class LoginValidateResult

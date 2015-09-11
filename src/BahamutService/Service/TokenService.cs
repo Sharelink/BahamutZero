@@ -14,7 +14,7 @@ namespace BahamutService
     {
         protected RedisClient Client { get; private set; }
 
-        public TokenService(ITokenRedisServerConfig ServerConfig)
+        public TokenService(IRedisServerConfig ServerConfig)
             : this(ServerConfig.Host, ServerConfig.Port, ServerConfig.Password, ServerConfig.Db)
         { }
 
@@ -48,11 +48,18 @@ namespace BahamutService
             return redisSessionData.RemoveEntry(key);
         }
 
-        public AccessTokenValidateResult ValidateAccessToken(string appkey, string accountId, string AccessToken)
+        public AccountSessionData ValidateToGetSessionData(string appkey, string accountId, string AccessToken)
         {
             var sessionDataRedis = Client.As<AccountSessionData>();
             var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
-            var AccountSessionData = sessionDataRedis[key];
+            return sessionDataRedis[key];
+        }
+
+        public AccessTokenValidateResult ValidateAccessToken(string appkey, string accountId, string AccessToken, string UserId)
+        {
+            var sessionDataRedis = Client.As<AccountSessionData>();
+            var AccountSessionData = ValidateToGetSessionData(appkey, accountId, AccessToken);
+            var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
             if (AccountSessionData == null)
             {
                 return new AccessTokenValidateResult() { Message = "Validate Failed" };
@@ -63,14 +70,14 @@ namespace BahamutService
                 {
                     double timeLimitDays = 7;
                     AccountSessionData.AccessToken = null;
+                    AccountSessionData.UserId = UserId;
                     AccountSessionData.AppToken = TokenUtil.GenerateToken(appkey, AccountSessionData.UserId);
                     key = TokenUtil.GenerateKeyOfToken(appkey, AccountSessionData.UserId, AccountSessionData.AppToken);
                     sessionDataRedis.SetEntry(key, AccountSessionData, TimeSpan.FromDays(timeLimitDays));
 
                     return new AccessTokenValidateResult()
                     {
-                        AppToken = AccountSessionData.AppToken,
-                        UserId = AccountSessionData.UserId
+                        UserSessionData = AccountSessionData
                     };
                 }
                 catch (Exception ex)

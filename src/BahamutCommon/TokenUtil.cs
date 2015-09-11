@@ -16,7 +16,10 @@ namespace BahamutCommon
 
         public static string GenerateKeyOfToken(string appkey,string uniqueId,string token)
         {
-            return string.Format("{0}:{1}_{2}", appkey, uniqueId, token);
+            var md = new DBTek.Crypto.MD5_Hsr();
+            var strings = string.Format("{0}#{1}#{2}",appkey, uniqueId, token);
+            var hash = md.HashString(strings);
+            return hash;
         }
     }
 }
