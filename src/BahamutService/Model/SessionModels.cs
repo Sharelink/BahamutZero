@@ -12,7 +12,6 @@ namespace BahamutService.Model
         public string Appkey { get; set; }
         public string AccountId { get; set; }
         public string UserId { get; set; }
-        public string APITokenServer { get; set; }
     }
 
     public class AccessTokenValidateResult
