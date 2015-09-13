@@ -12,83 +12,86 @@ namespace BahamutService
 
     public class TokenService
     {
-        protected RedisClient Client { get; private set; }
+        private IRedisClientsManager tokenServerClientManager;
 
-        public TokenService(IRedisServerConfig ServerConfig)
-            : this(ServerConfig.Host, ServerConfig.Port, ServerConfig.Password, ServerConfig.Db)
-        { }
-
-        public TokenService(string host,int port,string password = null, long db = 0):
-            this(new RedisClient(new RedisEndpoint(host, port, password, db)))
+        public TokenService(IRedisClientsManager tokenServerClientManager)
         {
-        }
-
-        public TokenService(RedisClient Client)
-        {
-            this.Client = Client;
+            this.tokenServerClientManager = tokenServerClientManager;
         }
 
         async public Task<AccountSessionData> AllocateAccessToken(AccountSessionData sessionData)
         {
             return await Task.Run(() =>
             {
-                sessionData.AccessToken = TokenUtil.GenerateToken(sessionData.Appkey, sessionData.AccountId);
-                double timeLimitMinutes = 10;
-                var timeExpiresIn = TimeSpan.FromMinutes(timeLimitMinutes);
-                var key = TokenUtil.GenerateKeyOfToken(sessionData.Appkey, sessionData.AccountId, sessionData.AccessToken);
-                var redisSessionData = Client.As<AccountSessionData>();
-                redisSessionData.SetEntry(key, sessionData, timeExpiresIn);
-                return sessionData;
+                using (var Client = tokenServerClientManager.GetClient())
+                {
+                    sessionData.AccessToken = TokenUtil.GenerateToken(sessionData.Appkey, sessionData.AccountId);
+                    double timeLimitMinutes = 10;
+                    var timeExpiresIn = TimeSpan.FromMinutes(timeLimitMinutes);
+                    var key = TokenUtil.GenerateKeyOfToken(sessionData.Appkey, sessionData.AccountId, sessionData.AccessToken);
+                    var redisSessionData = Client.As<AccountSessionData>();
+                    redisSessionData.SetEntry(key, sessionData, timeExpiresIn);
+                    return sessionData;
+                }
             });
         }
 
         public bool ReleaseAppToken(string appkey, string userId, string appToken)
         {
-            var key = TokenUtil.GenerateKeyOfToken(appkey, userId, appToken);
-            var redisSessionData = Client.As<AccountSessionData>();
-            return redisSessionData.RemoveEntry(key);
+            using (var Client = tokenServerClientManager.GetClient())
+            {
+                var key = TokenUtil.GenerateKeyOfToken(appkey, userId, appToken);
+                var redisSessionData = Client.As<AccountSessionData>();
+                return redisSessionData.RemoveEntry(key);
+            }
         }
 
         public AccountSessionData ValidateToGetSessionData(string appkey, string accountId, string AccessToken)
         {
-            var sessionDataRedis = Client.As<AccountSessionData>();
-            var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
-            return sessionDataRedis[key];
+            using (var Client = tokenServerClientManager.GetClient())
+            {
+                var sessionDataRedis = Client.As<AccountSessionData>();
+                var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
+                return sessionDataRedis[key];
+            }
         }
 
         public AccessTokenValidateResult ValidateAccessToken(string appkey, string accountId, string AccessToken, string UserId)
         {
-            var sessionDataRedis = Client.As<AccountSessionData>();
-            var AccountSessionData = ValidateToGetSessionData(appkey, accountId, AccessToken);
-            var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
-            if (AccountSessionData == null)
+            using (var Client = tokenServerClientManager.GetClient())
             {
-                return new AccessTokenValidateResult() { Message = "Validate Failed" };
-            }
-            else if (Client.Remove(key))
-            {
-                try
+                var sessionDataRedis = Client.As<AccountSessionData>();
+                var AccountSessionData = ValidateToGetSessionData(appkey, accountId, AccessToken);
+                var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
+                if (AccountSessionData == null)
                 {
-                    double timeLimitDays = 7;
-                    AccountSessionData.AccessToken = null;
-                    AccountSessionData.UserId = UserId;
-                    AccountSessionData.AppToken = TokenUtil.GenerateToken(appkey, AccountSessionData.UserId);
-                    key = TokenUtil.GenerateKeyOfToken(appkey, AccountSessionData.UserId, AccountSessionData.AppToken);
-                    sessionDataRedis.SetEntry(key, AccountSessionData, TimeSpan.FromDays(timeLimitDays));
-
-                    return new AccessTokenValidateResult()
+                    return new AccessTokenValidateResult() { Message = "Validate Failed" };
+                }
+                else if (Client.Remove(key))
+                {
+                    try
                     {
-                        UserSessionData = AccountSessionData
-                    };
+                        double timeLimitDays = 7;
+                        AccountSessionData.AccessToken = null;
+                        AccountSessionData.UserId = UserId;
+                        AccountSessionData.AppToken = TokenUtil.GenerateToken(appkey, AccountSessionData.UserId);
+                        key = TokenUtil.GenerateKeyOfToken(appkey, AccountSessionData.UserId, AccountSessionData.AppToken);
+                        sessionDataRedis.SetEntry(key, AccountSessionData, TimeSpan.FromDays(timeLimitDays));
+
+                        return new AccessTokenValidateResult()
+                        {
+                            UserSessionData = AccountSessionData
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        return new AccessTokenValidateResult() { Message = ex.Message };
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    return new AccessTokenValidateResult() { Message = ex.Message };
+                    return new AccessTokenValidateResult() { Message = "Server Error" };
                 }
-            }
-            else
-            {
-                return new AccessTokenValidateResult() { Message = "Server Error" };
             }
         }
 
@@ -96,20 +99,24 @@ namespace BahamutService
         {
             return await Task.Run(() =>
             {
-                var sessionDataRedis = Client.As<AccountSessionData>();
-                var key = TokenUtil.GenerateKeyOfToken(appkey, userId, AppToken);
-                var AccountSessionData = sessionDataRedis[key];
-                if (AccountSessionData == null)
+                using (var Client = tokenServerClientManager.GetClient())
                 {
-                    return null;
-                }
-                else
-                {
-                    double timeLimitDays = 7;
-                    sessionDataRedis.ExpireEntryIn(key, TimeSpan.FromDays(timeLimitDays));
-                    return AccountSessionData;
+                    var sessionDataRedis = Client.As<AccountSessionData>();
+                    var key = TokenUtil.GenerateKeyOfToken(appkey, userId, AppToken);
+                    var AccountSessionData = sessionDataRedis[key];
+                    if (AccountSessionData == null)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        double timeLimitDays = 7;
+                        sessionDataRedis.ExpireEntryIn(key, TimeSpan.FromDays(timeLimitDays));
+                        return AccountSessionData;
+                    }
                 }
             });
+        
         }
     }
 }
