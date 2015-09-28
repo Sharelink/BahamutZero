@@ -30,37 +30,66 @@ namespace BahamutService
 
         public bool ChangePassword(string accountId,string oldPassword, string newPassword)
         {
-            return true;
+            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            if (account.Password == oldPassword)
+            {
+                account.Password = newPassword;
+                return DBContext.SaveChanges() > 0;
+            }
+            return false;
         }
 
         public bool ChangeAccountEmail(string accountId,string newEmail)
         {
-            return true;
+            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            account.Email = newEmail;
+            return DBContext.SaveChanges() > 0;
         }
 
         public bool ChangeAccountMobile(string accountId,string newMobile)
         {
-            return true;
+            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            account.Mobile = newMobile;
+            return DBContext.SaveChanges() > 0;
         }
 
         public bool ChangeAccountName(string accountId,string newName)
         {
-            return true;
+            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            account.AccountName = newName;
+            return DBContext.SaveChanges() > 0;
         }
 
         public bool ChangeAccountBirthday(string accountId,DateTime newBirth)
         {
-            return true;
+            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            return DBContext.SaveChanges() > 0;
         }
 
         public bool ChangeName(string accountId,string newName)
         {
-            return true;
+            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            account.Name = newName;
+            return DBContext.SaveChanges() > 0;
+        }
+
+        public bool AccountExists(string accountName)
+        {
+            try
+            {
+                var accounts = from a in DBContext.Account where a.AccountName == accountName select a.AccountID;
+                return accounts.Count() > 0;
+            }
+            catch (Exception)
+            {
+                return true;
+            }
         }
 
         public Account GetAccount(string accountId)
         {
-            return new Account() {  };
+            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            return account;
         }
 
         public void SaveAllChanges()
