@@ -25,6 +25,7 @@ namespace BahamutService
         public string AddAccount(Account newBahamutAccount)
         {
             DBContext.Account.Add(newBahamutAccount);
+            DBContext.SaveChanges();
             return newBahamutAccount.AccountID.ToString();
         }
 
