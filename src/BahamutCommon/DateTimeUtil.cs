@@ -7,6 +7,11 @@ namespace BahamutCommon
 {
     public class DateTimeUtil
     {
+        public static string ToAccurateDateTimeString(DateTime date)
+        {
+            return date.ToString("yyyy-MM-dd HH:mm:ss.fff");
+        }
+
         public static string ToString(DateTime date)
         {
             return date.ToString("yyyy-MM-dd HH:mm:ss");

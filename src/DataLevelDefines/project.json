@@ -7,11 +7,11 @@
   "licenseUrl": "",
 
   "dependencies": {
-    "ServiceStack.Redis": "4.0.44",
     "EntityFramework": "6.1.3",
     "MySql.Data": "6.9.7",
     "MySql.Data.Entity": "6.9.7",
     "MySql.Web": "6.9.7",
-    "MongoDB.Driver": "2.0.1"
+    "MongoDB.Driver": "2.0.1",
+    "ServiceStack.Redis": "4.0.46"
   }
 }
