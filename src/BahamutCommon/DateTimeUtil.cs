@@ -21,7 +21,9 @@ namespace BahamutCommon
         {
             try
             {
-                return DateTime.Parse(dateString);
+                var time = DateTime.Parse(dateString);
+                time = new DateTime(time.Ticks, DateTimeKind.Utc);
+                return time;
             }
             catch (Exception)
             {

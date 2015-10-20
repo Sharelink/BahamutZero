@@ -12,7 +12,7 @@ namespace BahamutCommon
         {
             var sha = new DBTek.Crypto.UnixCrypt();
             var guid = Guid.NewGuid();
-            return sha.HashString(guid.ToString() + appkey + accountId + DateTime.Now.ToLongTimeString(), DBTek.Crypto.UnixCryptTypes.SHA2_256);
+            return sha.HashString(guid.ToString() + appkey + accountId + DateTime.UtcNow.ToLongTimeString(), DBTek.Crypto.UnixCryptTypes.SHA2_256);
         }
 
         public static string GenerateKeyOfToken(string appkey,string uniqueId,string token)

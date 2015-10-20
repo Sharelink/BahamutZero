@@ -17,7 +17,7 @@ namespace BahamutCommon
         {
             var guid = Guid.NewGuid();
             var sha = new SHA1_Hsr();
-            var code = string.Format("{0}_{1}_{2}", guid.ToString(), appName,DateTime.Now.Ticks);
+            var code = string.Format("{0}_{1}_{2}", guid.ToString(), appName,DateTime.UtcNow.Ticks);
             return sha.HashString(code);
         }
     }
