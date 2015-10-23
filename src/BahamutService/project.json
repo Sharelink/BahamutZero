@@ -9,5 +9,8 @@
   "dependencies": {
     "BahamutCommon": "1.0.0-*",
     "DataLevelDefines": "1.0.0-*"
+  },
+  "frameworks": {
+    "dnx451": { }
   }
 }
