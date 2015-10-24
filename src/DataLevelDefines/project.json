@@ -11,7 +11,6 @@
     "MongoDB.Driver": "2.1.0",
     "MySql.Data": "6.9.7",
     "MySql.Data.Entity": "6.9.7",
-    "MySql.Web": "6.9.7",
     "ServiceStack.Redis": "4.0.46"
   },
   "frameworks": {

@@ -11,6 +11,7 @@
     "DBTek.Crypto": "2.1.0"
       },
   "frameworks": {
-    "dnx451": { }
+    "dnx451": {
+    }
   }
 }
