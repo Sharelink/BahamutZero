@@ -10,17 +10,15 @@ namespace BahamutCommon
     {
         public static string GenerateToken(string appkey,string accountId)
         {
-            var sha = new DBTek.Crypto.UnixCrypt();
             var guid = Guid.NewGuid();
-            return sha.HashString(guid.ToString() + appkey + accountId + DateTime.UtcNow.ToLongTimeString(), DBTek.Crypto.UnixCryptTypes.SHA2_256);
+            var code = string.Format("{0}{1}{2}{3}",guid.ToString(), appkey, accountId, DateTime.UtcNow.ToLongTimeString());
+            return PasswordHash.Encrypt.SHA1(code);
         }
 
         public static string GenerateKeyOfToken(string appkey,string uniqueId,string token)
         {
-            var md = new DBTek.Crypto.MD5_Hsr();
             var strings = string.Format("{0}#{1}#{2}",appkey, uniqueId, token);
-            var hash = md.HashString(strings);
-            return hash;
+            return PasswordHash.Encrypt.MD5(strings);
         }
     }
 }
