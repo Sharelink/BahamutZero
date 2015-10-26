@@ -37,7 +37,7 @@ namespace BahamutService
             }
             else
             {
-                var accounts = from a in DBContext.Account where (a.AccountID.ToString() == loginString || a.Mobile == loginString || a.Email == loginString) && a.Password == password select a;
+                var accounts = from a in DBContext.Account where (a.AccountID.ToString() == loginString || a.AccountName == loginString || a.Mobile == loginString || a.Email == loginString) && a.Password == password select a;
                 if (accounts.Count() > 0)
                 {
                     var account = accounts.First();
