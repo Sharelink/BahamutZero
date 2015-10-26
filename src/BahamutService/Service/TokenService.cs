@@ -46,22 +46,25 @@ namespace BahamutService
             }
         }
 
-        public AccountSessionData ValidateToGetSessionData(string appkey, string accountId, string AccessToken)
+        public async Task<AccountSessionData> ValidateToGetSessionData(string appkey, string accountId, string AccessToken)
         {
-            using (var Client = tokenServerClientManager.GetClient())
+            return await Task.Run(() =>
             {
-                var sessionDataRedis = Client.As<AccountSessionData>();
-                var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
-                return sessionDataRedis[key];
-            }
+                using (var Client = tokenServerClientManager.GetClient())
+                {
+                    var sessionDataRedis = Client.As<AccountSessionData>();
+                    var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
+                    return sessionDataRedis[key];
+                }
+            });
         }
 
-        public AccessTokenValidateResult ValidateAccessToken(string appkey, string accountId, string AccessToken, string UserId)
+        public async Task<AccessTokenValidateResult> ValidateAccessToken(string appkey, string accountId, string AccessToken, string UserId)
         {
             using (var Client = tokenServerClientManager.GetClient())
             {
                 var sessionDataRedis = Client.As<AccountSessionData>();
-                var AccountSessionData = ValidateToGetSessionData(appkey, accountId, AccessToken);
+                var AccountSessionData = await ValidateToGetSessionData(appkey, accountId, AccessToken);
                 var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
                 if (AccountSessionData == null)
                 {
