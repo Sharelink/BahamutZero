@@ -1,6 +1,5 @@
 ﻿using BahamutCommon;
 using BahamutService.Model;
-using DataLevelDefines;
 using ServiceStack.Redis;
 using System;
 using System.Collections.Generic;
