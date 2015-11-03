@@ -27,13 +27,9 @@ namespace BahamutService
 
         private LoginValidateResult Validate(string loginString, string password)
         {
-            if (string.IsNullOrWhiteSpace(loginString))
+            if (string.IsNullOrWhiteSpace(loginString) || string.IsNullOrWhiteSpace(password))
             {
-                throw new Exception("loginInfo is empty");
-            }
-            else if (string.IsNullOrWhiteSpace(password))
-            {
-                throw new Exception("password is empty");
+                throw new Exception("VALIDATE_INFO_INVALID");
             }
             else
             {
@@ -45,7 +41,7 @@ namespace BahamutService
                 }
                 else
                 {
-                    throw new NullReferenceException("Account Not Exists Or Password Wrong");
+                    throw new NullReferenceException("VALIDATE_FAILED");
                 }
             }
         }
