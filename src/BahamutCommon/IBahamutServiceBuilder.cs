@@ -30,7 +30,7 @@ namespace BahamutCommon
             else
             {
                 var ex = new Exception(string.Format("Never Use {0} Before!", typeName));
-                Console.WriteLine(ex.Message);
+                NLog.LogManager.GetCurrentClassLogger().Debug(ex);
                 throw ex;
             }
         }
@@ -51,7 +51,7 @@ namespace BahamutCommon
             }
             var typeName = BahamutService.FullName;
             builder.Properties.Add(typeName, service);
-            Console.WriteLine("Use Service:" + typeName);
+            NLog.LogManager.GetCurrentClassLogger().Debug("Use Service:{0}", typeName);
             return builder;
         }
 

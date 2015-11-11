@@ -11,7 +11,10 @@
     "MongoDB.Driver": "2.1.0",
     "MySql.Data": "6.9.7",
     "MySql.Data.Entity": "6.9.7",
-    "ServiceStack.Redis": "4.0.46"
+    "ServiceStack.Common": "3.9.71",
+    "ServiceStack.Text": "3.9.71",
+    "ServiceStack": "3.9.71",
+    "ServiceStack.Redis": "3.9.71"
   },
   "frameworks": {
     "dnx451": { }

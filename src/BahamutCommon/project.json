@@ -9,7 +9,8 @@
   "dependencies": {
     "DBTek.Crypto": "2.1.0",
     "Newtonsoft.Json": "7.0.1",
-    "PasswordHash": "1.1.0"
+    "PasswordHash": "1.1.0",
+    "NLog": "4.2.0"
   },
   "frameworks": {
     "dnx451": {
