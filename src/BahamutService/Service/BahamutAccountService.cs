@@ -83,7 +83,7 @@ namespace BahamutService
             }
             catch (Exception)
             {
-                return true;
+                throw;
             }
         }
 
