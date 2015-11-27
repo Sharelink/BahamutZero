@@ -31,13 +31,16 @@ namespace BahamutService
 
         public bool ChangePassword(string accountId,string oldPassword, string newPassword)
         {
-            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
-            if (account.Password == oldPassword)
+            try
             {
+                var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId && a.Password == oldPassword);
                 account.Password = newPassword;
                 return DBContext.SaveChanges() > 0;
             }
-            return false;
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public bool ChangeAccountEmail(string accountId,string newEmail)
