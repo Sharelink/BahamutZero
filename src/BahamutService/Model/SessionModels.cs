@@ -30,6 +30,7 @@ namespace BahamutService.Model
     public class LoginValidateResult
     {
         public string AccountID { get; set; }
+        public string AccountName { get; set; }
         public string Message { get; set; }
         public bool Succeeded { get; set; }
     }

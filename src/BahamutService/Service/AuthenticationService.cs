@@ -37,7 +37,7 @@ namespace BahamutService
                 if (accounts.Count() > 0)
                 {
                     var account = accounts.First();
-                    return new LoginValidateResult() { AccountID = account.AccountID.ToString(), Message = "Yes", Succeeded = true };
+                    return new LoginValidateResult() { AccountID = account.AccountID.ToString(), Message = "Yes", Succeeded = true, AccountName = account.AccountName };
                 }
                 else
                 {
