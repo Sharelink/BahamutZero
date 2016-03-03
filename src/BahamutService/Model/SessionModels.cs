@@ -31,6 +31,8 @@ namespace BahamutService.Model
     {
         public string AccountID { get; set; }
         public string AccountName { get; set; }
+        public string ValidatedMobile { get; set; }
+        public string ValidatedEmail { get; set; }
         public string Message { get; set; }
         public bool Succeeded { get; set; }
     }
