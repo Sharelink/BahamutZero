@@ -8,10 +8,10 @@
 
   "dependencies": {
     "DBTek.Crypto": "2.1.0",
-    "Newtonsoft.Json": "7.0.1",
     "PasswordHash": "1.1.0",
-    "NLog": "4.2.0",
-    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*"
+    "NLog": "4.2.3",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.2"
   },
   "frameworks": {
     "dnx451": { }
