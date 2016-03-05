@@ -13,4 +13,6 @@ namespace BahamutCommon
             return BitConverter.ToInt64(buffer, 0);
         }
     }
+
+    
 }

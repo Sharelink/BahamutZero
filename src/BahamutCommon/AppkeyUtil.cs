@@ -19,4 +19,16 @@ namespace BahamutCommon
             return PasswordHash.Encrypt.SHA1(code);
         }
     }
+
+    public class KeyUtil
+    {
+        static public string GenerateListKeyOfId<T>(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return null;
+            }
+            return string.Format("List<{0}>:{1}", typeof(T).FullName, id);
+        }
+    }
 }
