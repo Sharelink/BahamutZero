@@ -17,7 +17,7 @@ namespace BahamutCommon
             {
                 return null;
             }
-            return md5.HashString(originString);
+            return md5.HashString(originString).ToLower();
         }
     }
 
