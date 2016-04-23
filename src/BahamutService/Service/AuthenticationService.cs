@@ -3,6 +3,7 @@ using System.Linq;
 using System;
 using BahamutService.Model;
 using BahamutCommon;
+using System.Text.RegularExpressions;
 
 namespace BahamutService
 {
@@ -20,6 +21,11 @@ namespace BahamutService
             this.DBContext = DBContext;
         }
 
+        public bool CheckUsernamePasswordIsValid(string username, string password)
+        {
+            return Regex.IsMatch(username, @"^[_a-zA-Z0-9\u4e00-\u9fa5]{2,23}$") && Regex.IsMatch(password, @"^[a-zA-Z0-9]{16,}$");
+        }
+
         public LoginValidateResult LoginValidate(string loginString, string password)
         {
             return Validate(loginString, password);
@@ -27,7 +33,7 @@ namespace BahamutService
 
         private LoginValidateResult Validate(string loginString, string password)
         {
-            if (string.IsNullOrWhiteSpace(loginString) || string.IsNullOrWhiteSpace(password))
+            if (!CheckUsernamePasswordIsValid(loginString,password))
             {
                 throw new Exception("VALIDATE_INFO_INVALID");
             }
