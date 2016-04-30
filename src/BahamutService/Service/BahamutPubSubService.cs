@@ -13,6 +13,7 @@ namespace BahamutService.Service
         public string ToUser { get; set; }
         public string NotifyType { get; set; }
         public string Info { get; set; }
+        public string NotifyInfo { get; set; }
     }
 
     public class BahamutPubSubService
