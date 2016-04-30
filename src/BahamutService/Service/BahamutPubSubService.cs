@@ -14,6 +14,7 @@ namespace BahamutService.Service
         public string NotifyType { get; set; }
         public string Info { get; set; }
         public string NotifyInfo { get; set; }
+        public string CustomCmd { get; set; }
     }
 
     public class BahamutPubSubService
