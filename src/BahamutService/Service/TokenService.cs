@@ -120,5 +120,19 @@ namespace BahamutService
             });
         
         }
+
+        public async void SetUserSessionData(AccountSessionData userSessionData)
+        {
+            await Task.Run(() =>
+            {
+                using (var Client = tokenServerClientManager.GetClient())
+                {
+                    var sessionDataRedis = Client.As<AccountSessionData>();
+                    var key = TokenUtil.GenerateKeyOfToken(userSessionData.Appkey, userSessionData.UserId, userSessionData.AppToken);
+                    double timeLimitDays = 7;
+                    sessionDataRedis.SetEntry(key, userSessionData, TimeSpan.FromDays(timeLimitDays));
+                }
+            });
+        }
     }
 }
