@@ -7,11 +7,10 @@
     "licenseUrl": "",
 
   "dependencies": {
-    "DBTek.Crypto": "2.1.0",
-    "PasswordHash": "1.1.0",
-    "NLog": "4.2.3",
-    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*",
-    "Newtonsoft.Json": "8.0.2"
+    "Newtonsoft.Json": "9.0.1",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-rc1-final",
+    "NLog": "4.3.5",
+    "EasyEncryption": "1.0.2"
   },
   "frameworks": {
     "dnx451": { }

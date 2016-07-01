@@ -8,7 +8,7 @@
 
   "dependencies": {
     "EntityFramework": "6.1.3",
-    "MongoDB.Driver": "2.2.3",
+    "MongoDB.Driver": "2.2.4",
     "MySql.Data": "6.9.8",
     "MySql.Data.Entity": "6.9.8",
     "ServiceStack": "3.9.71",
