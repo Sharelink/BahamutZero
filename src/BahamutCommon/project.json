@@ -1,18 +1,14 @@
 {
     "version": "1.0.0-*",
     "description": "BahamutCommon Class Library",
-    "authors": [ "广杰" ],
-    "tags": [ "" ],
-    "projectUrl": "",
-    "licenseUrl": "",
 
   "dependencies": {
     "Newtonsoft.Json": "9.0.1",
-    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
     "NLog": "4.3.5",
     "EasyEncryption": "1.0.2"
   },
   "frameworks": {
-    "dnx451": { }
+    "net451": {}
   }
 }

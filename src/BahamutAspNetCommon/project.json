@@ -1,18 +1,14 @@
 {
   "version": "1.0.0-*",
   "description": "BahamutAspNetCommon Class Library",
-  "authors": [ "广杰" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
 
   "dependencies": {
     "BahamutService": "1.0.0-*",
-    "Microsoft.AspNet.Http.Abstractions": "1.0.0-rc1-final",
-    "Microsoft.AspNet.Mvc.Core": "6.0.0-rc1-final"
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0"
   },
 
   "frameworks": {
-    "dnx451": { }
+    "net451": {}
   }
 }
