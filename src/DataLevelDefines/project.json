@@ -7,10 +7,7 @@
     "MongoDB.Driver": "2.2.4",
     "MySql.Data": "6.9.8",
     "MySql.Data.Entity": "6.9.8",
-    "ServiceStack": "3.9.71",
-    "ServiceStack.Common": "3.9.71",
-    "ServiceStack.Redis": "3.9.71",
-    "ServiceStack.Text": "3.9.71"
+    "ServiceStack.Redis.Complete": "1.0.0"
   },
   "frameworks": {
     "net451": {}
