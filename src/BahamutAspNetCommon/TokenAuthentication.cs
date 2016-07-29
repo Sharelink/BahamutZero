@@ -61,7 +61,7 @@ namespace BahamutAspNetCommon
                 else
                 {
                     LogManager.GetLogger("Route").Info("Validate Failed -> userId:{0}", userId);
-                    httpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     return null;
                 }
             }
