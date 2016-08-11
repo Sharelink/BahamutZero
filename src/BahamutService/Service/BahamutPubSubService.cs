@@ -41,9 +41,11 @@ namespace BahamutService.Service
         public string GetUserDeviceToken(string userId, TimeSpan expireTime)
         {
             var client = psClientManager.GetClient();
-            client.ExpireEntryIn(userId,expireTime);
-            return client.Get<string>(userId);
-
+            if (client.ExpireEntryIn(userId, expireTime))
+            {
+                return client.Get<string>(userId);
+            }
+            return null;
         }
 
         public void ExpireUserDeviceToken(string userId,TimeSpan expireTime)
