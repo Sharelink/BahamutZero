@@ -21,12 +21,34 @@ namespace BahamutService.Service
     {
         public static readonly string UnSubscribeMessage = "UnSubscribe";
         
-
         private IRedisClientsManager psClientManager { get; set; }
 
         public BahamutPubSubService(IRedisClientsManager psClientManager)
         {
             this.psClientManager = psClientManager;
+        }
+
+        public void RegistUserDevice(string userId,string deviceToken,TimeSpan expireTime)
+        {
+            psClientManager.GetClient().Set(userId, expireTime);
+        }
+
+        public string GetUserDeviceToken(string userId)
+        {
+            return psClientManager.GetReadOnlyClient().Get<string>(userId);
+        }
+
+        public string GetUserDeviceToken(string userId, TimeSpan expireTime)
+        {
+            var client = psClientManager.GetClient();
+            client.ExpireEntryIn(userId,expireTime);
+            return client.Get<string>(userId);
+
+        }
+
+        public void ExpireUserDeviceToken(string userId,TimeSpan expireTime)
+        {
+            psClientManager.GetClient().ExpireEntryIn(userId, expireTime);
         }
 
         public void PublishBahamutUserNotifyMessage(string appUniqueId, BahamutPublishModel message)
