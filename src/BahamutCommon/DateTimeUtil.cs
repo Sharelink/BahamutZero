@@ -7,6 +7,13 @@ namespace BahamutCommon
 {
     public class DateTimeUtil
     {
+        public static TimeSpan UnixTimeSpan
+        {
+            get
+            {
+                return DateTime.Now - DateTime.Parse("01/01/1970");
+            }
+        }
 
         public static int ConvertDateTimeSecondInt(DateTime dt)
         {
