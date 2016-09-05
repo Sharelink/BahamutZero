@@ -62,14 +62,14 @@ namespace BahamutAspNetCommon
                 {
                     LogManager.GetLogger("Route").Info("Validate Failed -> userId:{0}", userId);
                     httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    return null;
+                    return Task.FromResult(0);
                 }
             }
             catch (Exception ex)
             {
                 LogManager.GetLogger("Error").Error(ex);
                 httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                return null;
+                return Task.FromResult(0);
             }
         }
     }
