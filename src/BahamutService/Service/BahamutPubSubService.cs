@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using BahamutService.Model;
+using Newtonsoft.Json;
 using ServiceStack.Redis;
 using System;
 using System.Collections.Generic;
@@ -28,22 +29,27 @@ namespace BahamutService.Service
             this.psClientManager = psClientManager;
         }
 
-        public void RegistUserDevice(string userId,string deviceToken,TimeSpan expireTime)
+        public bool RemoveUserDevice(string userId)
         {
-            psClientManager.GetClient().Set(userId, expireTime);
+            return psClientManager.GetClient().Remove(userId);
         }
 
-        public string GetUserDeviceToken(string userId)
+        public void RegistUserDevice(string userId,DeviceToken deviceToken,TimeSpan expireTime)
         {
-            return psClientManager.GetReadOnlyClient().Get<string>(userId);
+            psClientManager.GetClient().Set(userId, deviceToken, expireTime);
         }
 
-        public string GetUserDeviceToken(string userId, TimeSpan expireTime)
+        public DeviceToken GetUserDeviceToken(string userId)
+        {
+            return psClientManager.GetReadOnlyClient().Get<DeviceToken>(userId);
+        }
+
+        public DeviceToken GetUserDeviceToken(string userId, TimeSpan expireTime)
         {
             var client = psClientManager.GetClient();
             if (client.ExpireEntryIn(userId, expireTime))
             {
-                return client.Get<string>(userId);
+                return client.Get<DeviceToken>(userId);
             }
             return null;
         }

@@ -14,6 +14,41 @@ namespace BahamutService.Model
         public string UserId { get; set; }
     }
 
+    public class DeviceToken
+    {
+        public const string DeviceTypeIOS = "iOS";
+        public const string DeviceTypeAndroid = "Android";
+        public const string DeviceTypeWindows = "Windows";
+        public string Token { get; set; }
+        public string Type { get; set; }
+
+        public bool IsUnValidToken()
+        {
+            return string.IsNullOrWhiteSpace(Token) || string.IsNullOrWhiteSpace(Type);
+        }
+
+        public bool IsValidToken()
+        {
+            return !IsUnValidToken();
+        }
+
+        public bool IsIOSDevice()
+        {
+            return DeviceTypeIOS == Type;
+        }
+
+        public bool IsAndroidDevice()
+        {
+            return DeviceTypeAndroid == Type;
+        }
+
+        public bool IsWindowsDevice()
+        {
+
+            return DeviceTypeWindows == Type;
+        }
+    }
+
     public class AccessTokenValidateResult
     {
         public bool Succeed
