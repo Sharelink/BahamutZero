@@ -9,16 +9,12 @@ namespace BahamutService
 {
     public class AuthenticationService
     {
-        protected BahamutDBContext DBContext { get; private set; }
+        protected BahamutDBContext DBContext { get { return new BahamutDBContext(connectionString); } }
+        protected string connectionString { get; set; }
 
         public AuthenticationService(string connectionString)
-            :this(new BahamutDBContext(connectionString))
         {
-        }
-
-        public AuthenticationService(BahamutDBContext DBContext)
-        {
-            this.DBContext = DBContext;
+            this.connectionString = connectionString;
         }
 
         public bool CheckUsernamePasswordIsValid(string username, string password)

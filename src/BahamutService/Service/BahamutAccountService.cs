@@ -9,23 +9,19 @@ namespace BahamutService
 {
     public class BahamutAccountService
     {
-        protected BahamutDBContext DBContext { get; private set; }
-        public DbSet<Account> Account {get { return DBContext.Account; } }
-
+        protected BahamutDBContext DBContext { get { return new BahamutDBContext(connectionString); } }
+        public string connectionString { get; private set; }
+        
         public BahamutAccountService(string connectionString)
-            :this(new BahamutDBContext(connectionString))
         {
-        }
-
-        public BahamutAccountService(BahamutDBContext DBContext)
-        {
-            this.DBContext = DBContext;
+            this.connectionString = connectionString;
         }
 
         public string AddAccount(Account newBahamutAccount)
         {
-            DBContext.Account.Add(newBahamutAccount);
-            DBContext.SaveChanges();
+            var db = DBContext;
+            db.Account.Add(newBahamutAccount);
+            db.SaveChanges();
             return newBahamutAccount.AccountID.ToString();
         }
 
@@ -33,9 +29,10 @@ namespace BahamutService
         {
             try
             {
-                var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId && a.Password == oldPassword);
+                var db = DBContext;
+                var account = db.Account.Single(a => a.AccountID.ToString() == accountId && a.Password == oldPassword);
                 account.Password = newPassword;
-                return DBContext.SaveChanges() > 0;
+                return db.SaveChanges() > 0;
             }
             catch (Exception)
             {
@@ -45,36 +42,41 @@ namespace BahamutService
 
         public bool ChangeAccountEmail(string accountId,string newEmail)
         {
-            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            var db = DBContext;
+            var account = db.Account.Single(a => a.AccountID.ToString() == accountId);
             account.Email = newEmail;
-            return DBContext.SaveChanges() > 0;
+            return db.SaveChanges() > 0;
         }
 
         public bool ChangeAccountMobile(string accountId,string newMobile)
         {
-            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            var db = DBContext;
+            var account = db.Account.Single(a => a.AccountID.ToString() == accountId);
             account.Mobile = newMobile;
-            return DBContext.SaveChanges() > 0;
+            return db.SaveChanges() > 0;
         }
 
         public bool ChangeAccountName(string accountId,string newName)
         {
-            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            var db = DBContext;
+            var account = db.Account.Single(a => a.AccountID.ToString() == accountId);
             account.AccountName = newName;
-            return DBContext.SaveChanges() > 0;
+            return db.SaveChanges() > 0;
         }
 
         public bool ChangeAccountBirthday(string accountId,DateTime newBirth)
         {
-            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
-            return DBContext.SaveChanges() > 0;
+            var db = DBContext;
+            var account = db.Account.Single(a => a.AccountID.ToString() == accountId);
+            return db.SaveChanges() > 0;
         }
 
         public bool ChangeName(string accountId,string newName)
         {
-            var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
+            var db = DBContext;
+            var account = db.Account.Single(a => a.AccountID.ToString() == accountId);
             account.Name = newName;
-            return DBContext.SaveChanges() > 0;
+            return db.SaveChanges() > 0;
         }
 
         public bool AccountExists(string accountName)
@@ -95,11 +97,7 @@ namespace BahamutService
             var account = DBContext.Account.Single(a => a.AccountID.ToString() == accountId);
             return account;
         }
-
-        public void SaveAllChanges()
-        {
-            DBContext.SaveChangesAsync();
-        }
+        
     }
 
 }
