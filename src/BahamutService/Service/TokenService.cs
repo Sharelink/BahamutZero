@@ -49,7 +49,7 @@ namespace BahamutService
         {
             return await Task.Run(() =>
             {
-                using (var Client = tokenServerClientManager.GetClient())
+                using (var Client = tokenServerClientManager.GetReadOnlyClient())
                 {
                     var sessionDataRedis = Client.As<AccountSessionData>();
                     var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
