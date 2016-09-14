@@ -1,9 +1,9 @@
 ﻿using BahamutService.Model;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BahamutService
 {
@@ -98,6 +98,14 @@ namespace BahamutService
             return account;
         }
         
+    }
+
+    public static class GetBahamutAccountServiceExtension
+    {
+        public static BahamutAccountService GetBahamutAccountService(this IServiceProvider provider)
+        {
+            return provider.GetService<BahamutAccountService>();
+        }
     }
 
 }

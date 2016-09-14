@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using ServiceStack.Redis;
+using StackExchange.Redis;
 
 namespace DataLevelDefines
 {
@@ -61,22 +61,38 @@ namespace DataLevelDefines
             return client;
         }
 
-        public static PooledRedisClientManager GenerateRedisClientManager(IConfigurationSection configSection)
+        public static ConnectionMultiplexer GenerateRedisConnectionMultiplexer(IConfigurationSection configSection)
         {
-            return GenerateRedisClientManager(new DataServerConfigSet(configSection));
+            return GenerateRedisConnectionMultiplexer(new DataServerConfigSet(configSection));
         }
 
-        public static PooledRedisClientManager GenerateRedisClientManager(DataServerConfigSet configSet)
+        public static ConnectionMultiplexer GenerateRedisConnectionMultiplexer(DataServerConfigSet config)
         {
-            var settings = new RedisClientManagerConfig()
+            var hosts = config.Masters.Union(config.Slavers);
+            var password = "";
+            var rwHost = hosts.Select(s =>
             {
-                MaxReadPoolSize = configSet.MaxPoolSize,
-                MaxWritePoolSize = configSet.MinPoolSize,
-            };
-            var rwHost = configSet.Masters.Select(s => { return s.serverUrl.Replace("redis://", ""); });
-            var rHost = configSet.Slavers.Select(s => { return s.serverUrl.Replace("redis://", ""); });
-            var mgr = new PooledRedisClientManager(rwHost, rHost, settings);
-            return mgr;
+                var url = s.serverUrl.Replace("redis://", "");
+                if (url.Contains("@"))
+                {
+                    var parts = url.Split(new char[] { '@' });
+                    if (string.IsNullOrWhiteSpace(password))
+                    {
+                        password = parts[0];
+                    }
+                    return parts[1];
+                }
+                else
+                {
+                    return url;
+                }
+            }).Where(s => !string.IsNullOrWhiteSpace(s));
+            var conString = string.Join(",", rwHost);
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                conString = string.Format("{0},password={1}", conString, password);
+            }
+            return ConnectionMultiplexer.Connect(conString);
         }
     }
 

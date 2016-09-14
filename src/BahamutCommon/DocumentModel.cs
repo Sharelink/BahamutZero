@@ -26,8 +26,13 @@ namespace BahamutCommon
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject(Document);
         }
-
     }
 
-
+    public static class ModelJsonExtension
+    {
+        public static string ToJson(this object x)
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(x);
+        }
+    }
 }

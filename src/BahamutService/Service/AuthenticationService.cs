@@ -4,6 +4,7 @@ using System;
 using BahamutService.Model;
 using BahamutCommon;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BahamutService
 {
@@ -58,16 +59,11 @@ namespace BahamutService
         
     }
 
-    public static class AuthenticationServiceExtensions
+    public static class GetAuthenticationServiceExtension
     {
-        public static IBahamutServiceBuilder UseAuthenticationService(this IBahamutServiceBuilder builder, params object[] args)
+        public static AuthenticationService GetAuthenticationService(this IServiceProvider provider)
         {
-            return builder.UseService<AuthenticationService>(args);
-        }
-
-        public static AuthenticationService GetAuthenticationService(this IBahamutServiceBuilder builder)
-        {
-            return builder.GetService<AuthenticationService>();
+            return provider.GetService<AuthenticationService>();
         }
     }
 }

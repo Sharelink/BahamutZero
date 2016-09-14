@@ -1,10 +1,11 @@
 ﻿using BahamutService.Model;
 using Newtonsoft.Json;
-using ServiceStack.Redis;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BahamutService.Service
 {
@@ -21,42 +22,65 @@ namespace BahamutService.Service
     public class BahamutPubSubService
     {
         public static readonly string UnSubscribeMessage = "UnSubscribe";
-        
-        private IRedisClientsManager psClientManager { get; set; }
+        private ConnectionMultiplexer pubsubRedis { get; set; }
 
-        public BahamutPubSubService(IRedisClientsManager psClientManager)
+        public BahamutPubSubService(ConnectionMultiplexer redis)
         {
-            this.psClientManager = psClientManager;
+            this.pubsubRedis = redis;
         }
 
-        public bool RemoveUserDevice(string userId)
+        public async Task<bool> RemoveUserDeviceAsync(string userId)
         {
-            return psClientManager.GetClient().Remove(userId);
+            return await pubsubRedis.GetDatabase().KeyDeleteAsync(userId);
         }
 
-        public void RegistUserDevice(string userId,DeviceToken deviceToken,TimeSpan expireTime)
+        public async Task<bool> RegistUserDeviceAsync(string userId, DeviceToken deviceToken, TimeSpan expireTime)
         {
-            psClientManager.GetClient().Set(userId, deviceToken, expireTime);
+            var dt = JsonConvert.SerializeObject(deviceToken);
+            return await pubsubRedis.GetDatabase().StringSetAsync(userId, dt, expireTime);
         }
 
-        public DeviceToken GetUserDeviceToken(string userId)
+        public async Task<Tuple<DeviceToken,TimeSpan>> GetUserDeviceTokenWithExpiryAsync(string userId)
         {
-            return psClientManager.GetReadOnlyClient().Get<DeviceToken>(userId);
-        }
-
-        public DeviceToken GetUserDeviceToken(string userId, TimeSpan expireTime)
-        {
-            var client = psClientManager.GetClient();
-            if (client.ExpireEntryIn(userId, expireTime))
+            var dt = await pubsubRedis.GetDatabase().StringGetWithExpiryAsync(userId, CommandFlags.PreferSlave);
+            if (!string.IsNullOrWhiteSpace(dt.Value) && dt.Expiry.HasValue)
             {
-                return client.Get<DeviceToken>(userId);
+                return new Tuple<DeviceToken, TimeSpan>(JsonConvert.DeserializeObject<DeviceToken>(dt.Value), dt.Expiry.Value);
             }
             return null;
         }
 
-        public void ExpireUserDeviceToken(string userId,TimeSpan expireTime)
+        public async Task<DeviceToken> GetUserDeviceTokenAsync(string userId)
         {
-            psClientManager.GetClient().ExpireEntryIn(userId, expireTime);
+            var dt = await pubsubRedis.GetDatabase().StringGetAsync(userId, CommandFlags.PreferSlave);
+            if (!string.IsNullOrWhiteSpace(dt))
+            {
+                return JsonConvert.DeserializeObject<DeviceToken>(dt);
+            }
+            return null;
+        }
+
+        public async Task<TimeSpan> GetDeviceTokenTimeToLiveAsync(string userId)
+        {
+            var ts = await pubsubRedis.GetDatabase().KeyTimeToLiveAsync(userId);
+            return ts.HasValue ? ts.Value : TimeSpan.FromSeconds(0);
+        }
+
+        public async Task<DeviceToken> GetUserDeviceTokenAsync(string userId, TimeSpan expireTime)
+        {
+            var db = pubsubRedis.GetDatabase();
+            await db.KeyExpireAsync(userId, expireTime);
+            var dt = await db.StringGetAsync(userId, CommandFlags.PreferSlave);
+            if (!string.IsNullOrWhiteSpace(dt))
+            {
+                return JsonConvert.DeserializeObject<DeviceToken>(dt);
+            }
+            return null;
+        }
+
+        public async Task<bool> ExpireUserDeviceTokenAsync(string userId, TimeSpan expireTime)
+        {
+            return await pubsubRedis.GetDatabase().KeyExpireAsync(userId, expireTime);
         }
 
         public void PublishBahamutUserNotifyMessage(string appUniqueId, BahamutPublishModel message)
@@ -73,24 +97,23 @@ namespace BahamutService.Service
             {
                 throw new Exception("Notify Type Is Empty");
             }
-            Task.Run(() =>
+            Task.Run(async () =>
             {
-                using (var psClient = psClientManager.GetClient())
-                {
-                    psClient.PublishMessage(appUniqueId, JsonConvert.SerializeObject(message));
-
-                }
+                await pubsubRedis.GetDatabase().PublishAsync(appUniqueId, JsonConvert.SerializeObject(message));
             });
         }
         
         public void UnSubscribe(string channel)
         {
-            psClientManager.GetClient().PublishMessage(channel, UnSubscribeMessage);
+            Task.Run(async () =>
+            {
+                await pubsubRedis.GetDatabase().PublishAsync(channel, UnSubscribeMessage);
+            });
         }
 
-        public IRedisSubscription CreateSubscription()
+        public ISubscriber CreateSubscription()
         {
-            return psClientManager.GetClient().CreateSubscription();
+            return pubsubRedis.GetSubscriber();
         }
 
         public BahamutPublishModel DeserializePublishMessage(string message)
@@ -98,5 +121,13 @@ namespace BahamutService.Service
             return JsonConvert.DeserializeObject<BahamutPublishModel>(message);
         }
 
+    }
+
+    public static class GetBahamutPubSubServiceExtension
+    {
+        public static BahamutPubSubService GetBahamutPubSubService(this IServiceProvider provider)
+        {
+            return provider.GetService<BahamutPubSubService>();
+        }
     }
 }

@@ -1,8 +1,11 @@
-﻿using ServiceStack.Redis;
+﻿using BahamutCommon;
+using Newtonsoft.Json;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BahamutService.Service
 {
@@ -17,72 +20,66 @@ namespace BahamutService.Service
 
         public string GetCacheModelListKey()
         {
-            return GenerateCacheModelListKey(AppUniqueId, Type, UniqueId);
+            return GenerateCacheModelListKey(AppUniqueId, Type);
         }
 
-        public static string GenerateCacheModelListKey(string appUniqueId, string modelType, string uniqueId)
+        public static string GenerateCacheModelListKey(string appUniqueId, string modelType)
         {
-            return string.Format("{0}:{1}:{2}", appUniqueId, modelType, uniqueId);
+            return string.Format("{0}:{1}", appUniqueId, modelType);
         }
 
+        public static BahamutCacheModel FromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<BahamutCacheModel>(json);
+        }
     }
 
     public class BahamutCacheService
     {
-        private IRedisClientsManager mcClientManager;
-        public BahamutCacheService(IRedisClientsManager mcClientManager)
+        private ConnectionMultiplexer redis;
+        public BahamutCacheService(ConnectionMultiplexer redis)
         {
-            this.mcClientManager = mcClientManager;
+            this.redis = redis;
         }
 
         public void PushCacheModelToList(BahamutCacheModel model)
         {
             Task.Run(() =>
             {
-                using (var msgClient = mcClientManager.GetClient())
-                {
-                    var client = msgClient.As<BahamutCacheModel>();
-
-                    var key = model.GetCacheModelListKey();
-                    var list = client.Lists[key];
-                    list.Append(model);
-
-                }
+                var db = redis.GetDatabase();
+                var key = model.GetCacheModelListKey();
+                db.ListRightPush(key, model.ToJson());
             });
         }
 
 
-        public void ClearCacheModels(string appUniqueId, string modelType, string uniqueId)
+        public void ClearCacheModels(string appUniqueId, string modelType)
         {
             Task.Run(() =>
             {
-                using (var msgClient = mcClientManager.GetClient())
-                {
-                    var client = msgClient.As<BahamutCacheModel>();
-                    var key = BahamutCacheModel.GenerateCacheModelListKey(appUniqueId, modelType, uniqueId);
-                    var list = client.Lists[key];
-                    if (list == null)
-                    {
-                        return;
-                    }
-                    client.RemoveAllFromList(list);
-                }
+                var key = BahamutCacheModel.GenerateCacheModelListKey(appUniqueId, modelType);
+                redis.GetDatabase().KeyDelete(key);
             });
         }
 
-        public async Task<IEnumerable<BahamutCacheModel>> GetCacheModels(string appUniqueId, string modelType, string uniqueId)
+        public async Task<IEnumerable<BahamutCacheModel>> GetCacheModelsAsync(string appUniqueId, string modelType)
         {
             return await Task.Run(() =>
             {
-                using (var msgClient = mcClientManager.GetClient())
-                {
-                    var client = msgClient.As<BahamutCacheModel>();
-                    var key = BahamutCacheModel.GenerateCacheModelListKey(appUniqueId, modelType, uniqueId);
-                    return client.Lists[key].Where(m => m.Type == modelType && m.UniqueId == uniqueId);
-                }
+                var key = BahamutCacheModel.GenerateCacheModelListKey(appUniqueId, modelType);
+                var values = redis.GetDatabase().ListRange(key);
+                var result = from v in values select BahamutCacheModel.FromJson(v);
+                return result;
             });
         }
     }
 
-    
+    public static class GetBahamutCacheServiceExtension
+    {
+        public static BahamutCacheService GetBahamutCacheService(this IServiceProvider provider)
+        {
+            return provider.GetService<BahamutCacheService>();
+        }
+    }
+
 }

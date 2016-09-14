@@ -1,16 +1,15 @@
 {
   "version": "1.0.0-*",
-  "description": "MySqlDefines Class Library",
+  "description": "DB Class Library",
 
   "dependencies": {
-    "EntityFramework": "6.1.3",
+    "Microsoft.EntityFrameworkCore": "1.0.0",
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
-    "MongoDB.Driver": "2.2.4",
-    "MySql.Data": "6.9.8",
-    "MySql.Data.Entity": "6.9.8",
-    "ServiceStack.Redis.Complete": "1.0.0"
+    "MongoDB.Driver": "2.3.0-rc1",
+    "MySql.Data.EntityFrameworkCore": "7.0.5-IR21",
+    "StackExchange.Redis": "1.1.605"
   },
   "frameworks": {
-    "net451": {}
+    "netcoreapp1.0": {}
   }
 }

@@ -15,10 +15,9 @@ namespace BahamutCommon
             }
         }
 
-        public static int ConvertDateTimeSecondInt(DateTime dt)
+        public static long ConvertDateTimeSecondInt(DateTime dt)
         {
-            var time = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
-            return (int)(dt - time).TotalSeconds;
+            return (long)TimeZoneInfo.Local.GetUtcOffset(dt).TotalSeconds;
         }
 
         public static string ToAccurateDateTimeString(DateTime date)

@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace BahamutService.Model
 {
+
     public class AccountSessionData
     {
         public string AccessToken { get; set; }

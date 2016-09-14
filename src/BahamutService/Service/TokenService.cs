@@ -1,138 +1,133 @@
 ﻿using BahamutCommon;
 using BahamutService.Model;
-using ServiceStack.Redis;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StackExchange.Redis;
+using Newtonsoft.Json;
 
 namespace BahamutService
 {
 
     public class TokenService
     {
-        private IRedisClientsManager tokenServerClientManager;
+        public TimeSpan AppTokenExipreTime { get; set; }
+        public TimeSpan AccessTokenExipreTime { get; set; }
 
-        public TokenService(IRedisClientsManager tokenServerClientManager)
+        private ConnectionMultiplexer redis;
+
+        public TokenService(ConnectionMultiplexer redis)
         {
-            this.tokenServerClientManager = tokenServerClientManager;
+            AppTokenExipreTime = TimeSpan.FromDays(14);
+            AccessTokenExipreTime = TimeSpan.FromMinutes(3);
+            this.redis = redis;
         }
 
-        async public Task<AccountSessionData> AllocateAccessToken(AccountSessionData sessionData)
+        async public Task<AccountSessionData> AllocateAccessTokenAsync(AccountSessionData sessionData)
         {
-            return await Task.Run(() =>
+            var db = redis.GetDatabase();
+            sessionData.AccessToken = TokenUtil.GenerateToken(sessionData.Appkey, sessionData.AccountId);
+            var key = TokenUtil.GenerateKeyOfToken(sessionData.Appkey, sessionData.AccountId, sessionData.AccessToken);
+            var suc = await db.StringSetAsync(key, sessionData.ToJson());
+            if (suc)
             {
-                using (var Client = tokenServerClientManager.GetClient())
-                {
-                    sessionData.AccessToken = TokenUtil.GenerateToken(sessionData.Appkey, sessionData.AccountId);
-                    double timeLimitMinutes = 10;
-                    var timeExpiresIn = TimeSpan.FromMinutes(timeLimitMinutes);
-                    var key = TokenUtil.GenerateKeyOfToken(sessionData.Appkey, sessionData.AccountId, sessionData.AccessToken);
-                    var redisSessionData = Client.As<AccountSessionData>();
-                    redisSessionData.SetEntry(key, sessionData, timeExpiresIn);
-                    return sessionData;
-                }
-            });
-        }
-
-        public bool ReleaseAppToken(string appkey, string userId, string appToken)
-        {
-            using (var Client = tokenServerClientManager.GetClient())
-            {
-                var key = TokenUtil.GenerateKeyOfToken(appkey, userId, appToken);
-                var redisSessionData = Client.As<AccountSessionData>();
-                return redisSessionData.RemoveEntry(key);
+                return sessionData;
             }
+            throw new Exception("Allocate AccessToken Error");
         }
 
-        public async Task<AccountSessionData> ValidateToGetSessionData(string appkey, string accountId, string AccessToken)
+        public async Task<bool> ReleaseAppTokenAsync(string appkey, string userId, string appToken)
         {
-            return await Task.Run(() =>
-            {
-                using (var Client = tokenServerClientManager.GetReadOnlyClient())
-                {
-                    var sessionDataRedis = Client.As<AccountSessionData>();
-                    var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
-                    return sessionDataRedis[key];
-                }
-            });
+            var db = redis.GetDatabase();
+            var key = TokenUtil.GenerateKeyOfToken(appkey, userId, appToken);
+            return await db.KeyDeleteAsync(key);
         }
 
-        public async Task<AccessTokenValidateResult> ValidateAccessToken(string appkey, string accountId, string AccessToken, string UserId)
+        public async Task<AccountSessionData> ValidateToGetSessionDataAsync(string appkey, string accountId, string AccessToken)
         {
-            using (var Client = tokenServerClientManager.GetClient())
+            var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
+            var json = await redis.GetDatabase().StringGetAsync(key);
+            if (string.IsNullOrWhiteSpace(json))
             {
-                var sessionDataRedis = Client.As<AccountSessionData>();
-                var AccountSessionData = await ValidateToGetSessionData(appkey, accountId, AccessToken);
-                var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
-                if (AccountSessionData == null)
+                return null;
+            }
+            return JsonConvert.DeserializeObject<AccountSessionData>(json);
+        }
+
+        public async Task<AccessTokenValidateResult> ValidateAccessTokenAsync(string appkey, string accountId, string AccessToken, string UserId)
+        {
+            var db = redis.GetDatabase();
+            var key = TokenUtil.GenerateKeyOfToken(appkey, accountId, AccessToken);
+            var dataJson = await db.StringGetAsync(key);
+            var AccountSessionData = string.IsNullOrWhiteSpace(dataJson) ? null : JsonConvert.DeserializeObject<AccountSessionData>(dataJson);
+            if (AccountSessionData == null)
+            {
+                return new AccessTokenValidateResult() { Message = "Validate Failed" };
+            }
+            else
+            {
+                try
                 {
-                    return new AccessTokenValidateResult() { Message = "Validate Failed" };
-                }
-                else if (Client.Remove(key))
-                {
-                    try
+                    AccountSessionData.AccessToken = null;
+                    AccountSessionData.UserId = UserId;
+                    AccountSessionData.AppToken = TokenUtil.GenerateToken(appkey, AccountSessionData.UserId);
+                    key = TokenUtil.GenerateKeyOfToken(appkey, AccountSessionData.UserId, AccountSessionData.AppToken);
+                    var suc = await db.StringSetAsync(key, AccountSessionData.ToJson());
+                    if (suc)
                     {
-                        double timeLimitDays = 7;
-                        AccountSessionData.AccessToken = null;
-                        AccountSessionData.UserId = UserId;
-                        AccountSessionData.AppToken = TokenUtil.GenerateToken(appkey, AccountSessionData.UserId);
-                        key = TokenUtil.GenerateKeyOfToken(appkey, AccountSessionData.UserId, AccountSessionData.AppToken);
-                        sessionDataRedis.SetEntry(key, AccountSessionData, TimeSpan.FromDays(timeLimitDays));
-
                         return new AccessTokenValidateResult()
                         {
                             UserSessionData = AccountSessionData
                         };
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        return new AccessTokenValidateResult() { Message = ex.Message };
+                        throw new Exception("Allocate App Token Failed");
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    return new AccessTokenValidateResult() { Message = "Server Error" };
+                    return new AccessTokenValidateResult() { Message = ex.Message };
                 }
             }
         }
 
-        async public Task<AccountSessionData> ValidateAppToken(string appkey, string userId, string AppToken)
+
+        async public Task<AccountSessionData> ValidateAppTokenAsync(string appkey, string userId, string AppToken)
         {
-            return await Task.Run(() =>
+
+            var key = TokenUtil.GenerateKeyOfToken(appkey, userId, AppToken);
+            var db = redis.GetDatabase();
+            var res = await db.StringGetWithExpiryAsync(key, CommandFlags.PreferSlave);
+            if (res.Expiry.HasValue && res.Expiry.Value.TotalSeconds > 0)
             {
-                using (var Client = tokenServerClientManager.GetClient())
+                if (res.Expiry.Value.TotalSeconds < AppTokenExipreTime.TotalSeconds * 0.1)
                 {
-                    var sessionDataRedis = Client.As<AccountSessionData>();
-                    var key = TokenUtil.GenerateKeyOfToken(appkey, userId, AppToken);
-                    var AccountSessionData = sessionDataRedis[key];
-                    if (AccountSessionData == null)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        double timeLimitDays = 7;
-                        sessionDataRedis.ExpireEntryIn(key, TimeSpan.FromDays(timeLimitDays));
-                        return AccountSessionData;
-                    }
+                    await db.KeyExpireAsync(key, AppTokenExipreTime);
                 }
-            });
-        
+            }
+            if (!string.IsNullOrWhiteSpace(res.Value))
+            {
+                return JsonConvert.DeserializeObject<AccountSessionData>(res.Value);
+            }
+            return null;
+            
         }
 
-        public async void SetUserSessionData(AccountSessionData userSessionData)
+        public async Task<bool> SetUserSessionDataAsync(AccountSessionData userSessionData)
         {
-            await Task.Run(() =>
-            {
-                using (var Client = tokenServerClientManager.GetClient())
-                {
-                    var sessionDataRedis = Client.As<AccountSessionData>();
-                    var key = TokenUtil.GenerateKeyOfToken(userSessionData.Appkey, userSessionData.UserId, userSessionData.AppToken);
-                    double timeLimitDays = 7;
-                    sessionDataRedis.SetEntry(key, userSessionData, TimeSpan.FromDays(timeLimitDays));
-                }
-            });
+            var key = TokenUtil.GenerateKeyOfToken(userSessionData.Appkey, userSessionData.UserId, userSessionData.AppToken);
+            return await redis.GetDatabase().StringSetAsync(key, userSessionData.ToJson(), AppTokenExipreTime);
+        }
+    }
+
+    public static class GetTokenServiceExtension
+    {
+        public static TokenService GetTokenService(this IServiceProvider provider)
+        {
+            return provider.GetService<TokenService>();
         }
     }
 }

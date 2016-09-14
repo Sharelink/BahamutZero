@@ -1,64 +1,44 @@
-﻿using MySqlDefines;
-using System;
-using System.Data.Entity;
-using System.Linq;
-
+﻿using Microsoft.EntityFrameworkCore;
+using MySQL.Data.EntityFrameworkCore.Extensions;
 namespace BahamutService.Model
 {
-    [MySqlDbConfigurationType]
+    
+    
     public class BahamutDBContext : DbContext
     {
-        public BahamutDBContext(string connectionString)
-            : base(connectionString)
-        {
-        }
-
+        public string ConnectionString { get; private set; }
         public virtual DbSet<Account> Account { get; set; }
-        public virtual DbSet<App> App { get; set; }
-
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        public BahamutDBContext(string connectionString)
         {
-            modelBuilder.Entity<Account>()
-                .Property(e => e.AccountName)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<Account>()
-                .Property(e => e.Email)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<Account>()
-                .Property(e => e.Mobile)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<Account>()
-                .Property(e => e.Name)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<Account>()
-                .Property(e => e.Password)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<Account>()
-                .Property(e => e.Extra)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<App>()
-                .Property(e => e.Appkey)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<App>()
-                .Property(e => e.Name)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<App>()
-                .Property(e => e.Document)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<App>()
-                .Property(e => e.Description)
-                .IsUnicode(false);
+            this.ConnectionString = connectionString;
         }
-    }
 
-    
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseMySQL(this.ConnectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+
+            modelBuilder.Entity<Account>()
+                .Property(e => e.AccountName);
+
+            modelBuilder.Entity<Account>()
+                .Property(e => e.Email);
+
+            modelBuilder.Entity<Account>()
+                .Property(e => e.Mobile);
+
+            modelBuilder.Entity<Account>()
+                .Property(e => e.Name);
+
+            modelBuilder.Entity<Account>()
+                .Property(e => e.Password);
+
+            modelBuilder.Entity<Account>()
+                .Property(e => e.Extra);
+        }
+    }    
 }

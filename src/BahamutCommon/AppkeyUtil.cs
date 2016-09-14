@@ -1,8 +1,8 @@
-﻿using EasyEncryption;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BahamutCommon.Encryption;
 
 namespace BahamutCommon
 {
@@ -17,6 +17,7 @@ namespace BahamutCommon
         {
             var guid = Guid.NewGuid();
             var code = string.Format("{0}_{1}_{2}", guid.ToString(), appName,DateTime.UtcNow.Ticks);
+            
             return SHA.ComputeSHA1Hash(code);
         }
     }

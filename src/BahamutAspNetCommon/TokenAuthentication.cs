@@ -51,7 +51,7 @@ namespace BahamutAspNetCommon
             }
             try
             {
-                var res = TokenService.ValidateAppToken(appkey, userId, token).Result;
+                var res = TokenService.ValidateAppTokenAsync(appkey, userId, token).Result;
                 if (res != null)
                 {
                     httpContext.Items.Add("AccountSessionData", res);
