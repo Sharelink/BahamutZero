@@ -36,7 +36,7 @@ namespace BahamutService.Service
 
         public async Task<bool> RegistUserDeviceAsync(string userId, DeviceToken deviceToken, TimeSpan expireTime)
         {
-            var dt = JsonConvert.SerializeObject(deviceToken);
+            var dt = JsonConvert.SerializeObject(deviceToken, Formatting.None);
             return await pubsubRedis.GetDatabase().StringSetAsync(userId, dt, expireTime);
         }
 
@@ -99,7 +99,7 @@ namespace BahamutService.Service
             }
             Task.Run(async () =>
             {
-                await pubsubRedis.GetDatabase().PublishAsync(appUniqueId, JsonConvert.SerializeObject(message));
+                await pubsubRedis.GetDatabase().PublishAsync(appUniqueId, JsonConvert.SerializeObject(message, Formatting.None));
             });
         }
         

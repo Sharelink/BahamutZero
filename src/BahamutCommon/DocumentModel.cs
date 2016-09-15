@@ -9,12 +9,12 @@ namespace BahamutCommon
     {
         public string ToDocument()
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this,Newtonsoft.Json.Formatting.None);
         }
 
         public static string ToDocument(dynamic obj)
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.None);
         }
 
         public static T ToDocumentObject<T>(string Document) where T : DocumentModel
@@ -32,7 +32,7 @@ namespace BahamutCommon
     {
         public static string ToJson(this object x)
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(x);
+            return Newtonsoft.Json.JsonConvert.SerializeObject(x, Newtonsoft.Json.Formatting.None);
         }
     }
 }
