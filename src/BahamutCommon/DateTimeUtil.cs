@@ -11,13 +11,8 @@ namespace BahamutCommon
         {
             get
             {
-                return DateTime.Now - DateTime.Parse("01/01/1970");
+                return DateTime.UtcNow - DateTime.Parse("01/01/1970");
             }
-        }
-
-        public static long ConvertDateTimeSecondInt(DateTime dt)
-        {
-            return (long)TimeZoneInfo.Local.GetUtcOffset(dt).TotalSeconds;
         }
 
         public static string ToAccurateDateTimeString(DateTime date)
