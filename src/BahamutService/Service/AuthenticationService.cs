@@ -8,6 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BahamutService
 {
+    public class LoginValidateException : Exception
+    {
+        public LoginValidateException() { }
+        public LoginValidateException(string message) : base(message) { }
+        public LoginValidateException(string message, Exception inner) : base(message, inner) { }
+    }
+
     public class AuthenticationService
     {
         protected BahamutDBContext DBContext { get { return new BahamutDBContext(connectionString); } }
@@ -32,7 +39,7 @@ namespace BahamutService
         {
             if (!CheckUsernamePasswordIsValid(loginString,password))
             {
-                throw new Exception("VALIDATE_INFO_INVALID");
+                throw new LoginValidateException("VALIDATE_INFO_INVALID");
             }
             else
             {
@@ -52,7 +59,7 @@ namespace BahamutService
                 }
                 else
                 {
-                    throw new NullReferenceException("VALIDATE_FAILED");
+                    throw new LoginValidateException("VALIDATE_FAILED");
                 }
             }
         }
