@@ -78,16 +78,34 @@ namespace BahamutService.Service
             return null;
         }
 
+        private static string RemoveChannelPrefix(string channelWithPrefix)
+        {
+            return channelWithPrefix.Replace("btpbs_", "");
+        }
+
+        private static string AddChannelWithPrefix(string channel)
+        {
+            return string.Format("btpbs_{0}", channel);
+        }
+
+        public async Task SubscribeAsync(RedisChannel channel, Action<RedisChannel, RedisValue> action)
+        {
+            await pubsubRedis.GetSubscriber().SubscribeAsync(AddChannelWithPrefix(channel), (c, v) =>
+            {
+                action(RemoveChannelPrefix(c), v);
+            });
+        }
+
         public async Task<bool> ExpireUserDeviceTokenAsync(string userId, TimeSpan expireTime)
         {
             return await pubsubRedis.GetDatabase().KeyExpireAsync(userId, expireTime);
         }
 
-        public void PublishBahamutUserNotifyMessage(string appUniqueId, BahamutPublishModel message)
+        public void PublishBahamutUserNotifyMessage(string appChannel, BahamutPublishModel message)
         {
-            if (string.IsNullOrWhiteSpace(appUniqueId))
+            if (string.IsNullOrWhiteSpace(appChannel))
             {
-                throw new Exception("App Id Is Empty");
+                throw new Exception("App Channel Is Empty");
             }
             if (string.IsNullOrWhiteSpace(message.ToUser))
             {
@@ -99,7 +117,7 @@ namespace BahamutService.Service
             }
             Task.Run(async () =>
             {
-                await pubsubRedis.GetDatabase().PublishAsync(appUniqueId, JsonConvert.SerializeObject(message, Formatting.None));
+                await pubsubRedis.GetDatabase().PublishAsync(AddChannelWithPrefix(appChannel), JsonConvert.SerializeObject(message, Formatting.None));
             });
         }
         
@@ -107,14 +125,16 @@ namespace BahamutService.Service
         {
             Task.Run(async () =>
             {
-                await pubsubRedis.GetDatabase().PublishAsync(channel, UnSubscribeMessage);
+                await pubsubRedis.GetDatabase().PublishAsync(AddChannelWithPrefix(channel), UnSubscribeMessage);
             });
         }
 
+        /*
         public ISubscriber CreateSubscription()
         {
             return pubsubRedis.GetSubscriber();
         }
+        */
 
         public BahamutPublishModel DeserializePublishMessage(string message)
         {
