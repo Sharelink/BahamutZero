@@ -11,8 +11,13 @@ namespace BahamutCommon
         {
             get
             {
-                return DateTime.UtcNow - DateTime.Parse("01/01/1970");
+                return UnixTimeSpanOfDateTime(DateTime.UtcNow);
             }
+        }
+
+        public static TimeSpan UnixTimeSpanOfDateTime(DateTime date)
+        {
+            return date - DateTime.Parse("01/01/1970");
         }
 
         public static string ToAccurateDateTimeString(DateTime date)

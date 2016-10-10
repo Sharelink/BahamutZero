@@ -3,11 +3,11 @@
   "description": "DB Class Library",
 
   "dependencies": {
-    "Microsoft.EntityFrameworkCore": "1.0.0",
+    "Microsoft.EntityFrameworkCore": "1.0.1",
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
-    "MongoDB.Driver": "2.3.0-rc1",
+    "MongoDB.Driver": "2.3.0",
     "MySql.Data.EntityFrameworkCore": "7.0.5-IR21",
-    "StackExchange.Redis": "1.1.605"
+    "StackExchange.Redis": "1.1.608"
   },
   "frameworks": {
     "netcoreapp1.0": {}
