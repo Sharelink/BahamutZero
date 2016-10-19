@@ -63,18 +63,13 @@ namespace BahamutService.Service
 
         public async Task<IEnumerable<DeviceToken>> GetUserDeviceTokensAsync(IEnumerable<string> userIds)
         {
-            var keys = from id in userIds select (RedisKey)id;
-            var result = new List<DeviceToken>();
-            var dtJsons = await pubsubRedis.GetDatabase().StringGetAsync(keys.ToArray(), CommandFlags.PreferSlave);
-            foreach (var item in dtJsons)
+            var keys = new RedisKey[userIds.Count()];
+            for (int i = 0; i < userIds.Count(); i++)
             {
-                var dt = JsonConvert.DeserializeObject<DeviceToken>(item);
-                if (dt.IsValidToken())
-                {
-                    result.Append(dt);
-                }
+                keys[i] = userIds.ElementAt(i);
             }
-            return result;
+            var dtJsons = await pubsubRedis.GetDatabase().StringGetAsync(keys.ToArray(), CommandFlags.PreferSlave);
+            return from item in dtJsons select JsonConvert.DeserializeObject<DeviceToken>(item);
         }
 
         public async Task<TimeSpan> GetDeviceTokenTimeToLiveAsync(string userId)
