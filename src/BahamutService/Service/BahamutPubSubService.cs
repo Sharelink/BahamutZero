@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 
 namespace BahamutService.Service
 {
@@ -47,7 +48,7 @@ namespace BahamutService.Service
             {
                 return new Tuple<DeviceToken, TimeSpan>(JsonConvert.DeserializeObject<DeviceToken>(dt.Value), dt.Expiry.Value);
             }
-            return null;
+            return null;   
         }
 
         public async Task<DeviceToken> GetUserDeviceTokenAsync(string userId)
@@ -58,6 +59,22 @@ namespace BahamutService.Service
                 return JsonConvert.DeserializeObject<DeviceToken>(dt);
             }
             return null;
+        }
+
+        public async Task<IEnumerable<DeviceToken>> GetUserDeviceTokensAsync(IEnumerable<string> userIds)
+        {
+            var keys = from id in userIds select (RedisKey)id;
+            var result = new List<DeviceToken>();
+            var dtJsons = await pubsubRedis.GetDatabase().StringGetAsync(keys.ToArray(), CommandFlags.PreferSlave);
+            foreach (var item in dtJsons)
+            {
+                var dt = JsonConvert.DeserializeObject<DeviceToken>(item);
+                if (dt.IsValidToken())
+                {
+                    result.Append(dt);
+                }
+            }
+            return result;
         }
 
         public async Task<TimeSpan> GetDeviceTokenTimeToLiveAsync(string userId)
