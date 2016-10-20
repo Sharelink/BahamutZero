@@ -72,11 +72,12 @@ namespace BahamutService.Service
         {
             try
             {
-                return JsonConvert.DeserializeObject<DeviceToken>(item);
+                var result = JsonConvert.DeserializeObject<DeviceToken>(item);
+                return result;
             }
             catch (System.Exception)
             {
-                return null;
+                return new DeviceToken();
             }
             
         }
