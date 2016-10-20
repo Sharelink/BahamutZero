@@ -36,18 +36,17 @@ namespace BahamutService.Model
 
         public bool IsIOSDevice()
         {
-            return DeviceTypeIOS == Type;
+            return DeviceTypeIOS.Equals(Type);
         }
 
         public bool IsAndroidDevice()
         {
-            return DeviceTypeAndroid == Type;
+            return DeviceTypeAndroid.Equals(Type);
         }
 
         public bool IsWindowsDevice()
         {
-
-            return DeviceTypeWindows == Type;
+            return DeviceTypeWindows.Equals(Type);
         }
     }
 
