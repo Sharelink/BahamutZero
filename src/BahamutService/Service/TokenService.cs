@@ -20,8 +20,8 @@ namespace BahamutService
 
         public TokenService(ConnectionMultiplexer redis)
         {
-            AppTokenExipreTime = TimeSpan.FromDays(14);
-            AccessTokenExipreTime = TimeSpan.FromMinutes(3);
+            AppTokenExipreTime = TimeSpan.FromDays(30);
+            AccessTokenExipreTime = TimeSpan.FromMinutes(6);
             this.redis = redis;
         }
 
@@ -113,7 +113,7 @@ namespace BahamutService
                 return JsonConvert.DeserializeObject<AccountSessionData>(res.Value);
             }
             return null;
-            
+
         }
 
         public async Task<bool> SetUserSessionDataAsync(AccountSessionData userSessionData)
