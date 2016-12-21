@@ -2,8 +2,6 @@
 using BahamutService.Model;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 using Newtonsoft.Json;
@@ -16,12 +14,15 @@ namespace BahamutService
         public TimeSpan AppTokenExipreTime { get; set; }
         public TimeSpan AccessTokenExipreTime { get; set; }
 
+        public float ReExpireAtPercentage { get; set; }
+
         private ConnectionMultiplexer redis;
 
         public TokenService(ConnectionMultiplexer redis)
         {
             AppTokenExipreTime = TimeSpan.FromDays(30);
             AccessTokenExipreTime = TimeSpan.FromMinutes(6);
+            ReExpireAtPercentage = 0.8f;
             this.redis = redis;
         }
 
@@ -72,8 +73,12 @@ namespace BahamutService
                 {
                     AccountSessionData.AccessToken = null;
                     AccountSessionData.UserId = UserId;
-                    AccountSessionData.AppToken = TokenUtil.GenerateToken(appkey, AccountSessionData.UserId);
-                    key = TokenUtil.GenerateKeyOfToken(appkey, AccountSessionData.UserId, AccountSessionData.AppToken);
+                    do
+                    {
+                        AccountSessionData.AppToken = TokenUtil.GenerateToken(appkey, AccountSessionData.UserId);
+                        key = TokenUtil.GenerateKeyOfToken(appkey, AccountSessionData.UserId, AccountSessionData.AppToken);
+                    } while (db.KeyExists(key));
+
                     var suc = await db.StringSetAsync(key, AccountSessionData.ToJson());
                     if (suc)
                     {
@@ -97,20 +102,23 @@ namespace BahamutService
 
         async public Task<AccountSessionData> ValidateAppTokenAsync(string appkey, string userId, string AppToken)
         {
-
             var key = TokenUtil.GenerateKeyOfToken(appkey, userId, AppToken);
             var db = redis.GetDatabase();
             var res = await db.StringGetWithExpiryAsync(key, CommandFlags.PreferSlave);
             if (res.Expiry.HasValue && res.Expiry.Value.TotalSeconds > 0)
             {
-                if (res.Expiry.Value.TotalSeconds < AppTokenExipreTime.TotalSeconds * 0.1)
+                if (res.Expiry.Value.Ticks < AppTokenExipreTime.Ticks * ReExpireAtPercentage)
                 {
                     await db.KeyExpireAsync(key, AppTokenExipreTime);
                 }
             }
             if (!string.IsNullOrWhiteSpace(res.Value))
             {
-                return JsonConvert.DeserializeObject<AccountSessionData>(res.Value);
+                var result = JsonConvert.DeserializeObject<AccountSessionData>(res.Value);
+                if (result.UserId == userId)
+                {
+                    return result;
+                }
             }
             return null;
 
