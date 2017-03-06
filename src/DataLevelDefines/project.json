@@ -6,7 +6,7 @@
     "Microsoft.EntityFrameworkCore": "1.0.1",
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0",
     "MongoDB.Driver": "2.4.2",
-    "MySql.Data.EntityFrameworkCore": "7.0.5-IR21",
+    "MySql.Data.EntityFrameworkCore": "7.0.6-IR31",
     "StackExchange.Redis": "1.2.1"
   },
   "frameworks": {
