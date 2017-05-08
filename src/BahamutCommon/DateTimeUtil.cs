@@ -15,9 +15,19 @@ namespace BahamutCommon
             }
         }
 
+        public static DateTime UnixTimeSpanZeroDate()
+        {
+            return DateTime.Parse("01/01/1970");
+        }
+
         public static TimeSpan UnixTimeSpanOfDateTime(DateTime date)
         {
-            return date - DateTime.Parse("01/01/1970");
+            return date - UnixTimeSpanZeroDate();
+        }
+
+        public static long UnixTimeSpanOfDateTimeMs(DateTime date)
+        {
+            return (long)UnixTimeSpanOfDateTime(date).TotalMilliseconds;
         }
 
         public static string ToAccurateDateTimeString(DateTime date)
@@ -42,7 +52,7 @@ namespace BahamutCommon
             {
                 return new DateTime(0);
             }
-            
+
         }
     }
 }
