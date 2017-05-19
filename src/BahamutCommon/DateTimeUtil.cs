@@ -17,7 +17,7 @@ namespace BahamutCommon
 
         public static DateTime UnixTimeSpanZeroDate()
         {
-            return DateTime.Parse("01/01/1970");
+            return new DateTime(1970, 1, 1, 0, 0, 0, 0);
         }
 
         public static TimeSpan UnixTimeSpanOfDateTime(DateTime date)
